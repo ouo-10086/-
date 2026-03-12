@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>給咪咪的餓靈古堡</title>
+    <style>
+        :root { --red: #CF9E9E; --bg:#FFF3EE; --gold: #6D342D; }
+        body { 
+            background: var(--bg); color: #D9B3B3; text-align: center;
+            font-family: Arial, "Microsoft JhengHei", sans-serif;
+            margin: 0; padding: 20px; display: flex; justify-content: center;
+        }
+        .castle {
+            max-width: 400px; width: 100%; border: 3px solid var(--red);
+            padding: 30px; background: #F2E6E6; border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+        }
+        h1 { color: var(--red); letter-spacing: 2px; text-shadow: 2px 2px 0 #AD5A5A; }
+        .lang-box { text-align: right; margin-bottom: 10px; }
+        .lang-box button { background: none; border: 1px solid var(--red); color: var(--red); cursor: pointer; padding: 2px 5px; font-size: 12px; }
+        .lang-box button.active { background: var(--red); color: #fff; }
+        
+        select { width: 100%; padding: 12px; margin: 20px 0; background: #D9B3B3; color: white; border: 1px solid var(--red); font-size: 16px; border-radius: 5px; }
+        
+        .main-btn { 
+            width: 100%; padding: 15px; background: var(--red); color: white;
+            border: none; font-size: 1.2rem; font-weight: bold; cursor: pointer;
+            border-radius: 5px; transition: 0.2s;
+        }
+        .main-btn:active { transform: scale(0.98); background: #cc0000; }
+        
+        #result-display {
+            height: 100px; display: flex; align-items: center; justify-content: center;
+            margin-top: 20px; border: 1px dashed #743A3A; background: #F2E6E6;
+        }
+        .food-name { font-size: 1.8rem; color: var(--gold); font-weight: bold; text-shadow: 0 0 10px var(--red); }
+        
+        #map-btn {
+            display: none; margin-top: 20px; padding: 12px;
+            background: #B87070; color: white; text-decoration: none;
+            display: none; border-radius: 5px; font-weight: bold;
+        }
+
+        /* 震動動畫 */
+        .shake { animation: shake 0.3s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-2px, -1px); }
+            100% { transform: translate(1px, 1px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="castle" id="castle-box">
+    <div class="lang-box">
+        <button id="z-btn" class="active" onclick="switchL('zh')">中</button>
+        <button id="e-btn" onclick="switchL('en')">EN</button>
+    </div>
+
+    <h1 id="t">給咪咪的餓靈古堡</h1>
+    <p id="st" style="color: #888; font-style: italic;">"The Hunger Hazard"</p>
+
+    <select id="loc-select"></select>
+
+    <button class="main-btn" id="b" onclick="go()">末世來臨 十二星座選擇你的晚餐</button>
+
+    <div id="result-display">
+        <div id="f-text" class="food-name">? ? ?</div>
+    </div>
+
+    <a id="map-btn" href="#" target="_blank">在地圖搜尋附近物資</a>
+</div>
+
+<script>
+    const area = {
+        tp: [
+            {z:"信義區", e:"Xinyi"}, {z:"大安區", e:"Daan"}, {z:"中山區", e:"Zhongshan"}, {z:"中正區", e:"Zhongzheng"},
+            {z:"大同區", e:"Datong"}, {z:"萬華區", e:"Wanhua"}, {z:"文山區", e:"Wenshan"}, {z:"南港區", e:"Nangang"},
+            {z:"內湖區", e:"Neihu"}, {z:"士林區", e:"Shilin"}, {z:"北投區", e:"Beitou"}, {z:"松山區", e:"Songshan"}
+        ],
+        ntp: [
+            {z:"板橋區", e:"Banqiao"}, {z:"三重區", e:"Sanchong"}, {z:"中和區", e:"Zhonghe"}, {z:"永和區", e:"Yonghe"},
+            {z:"新莊區", e:"Xinzhuang"}, {z:"新店區", e:"Xindian"}, {z:"土城區", e:"Tucheng"}, {z:"蘆洲區", e:"Luzhou"},
+            {z:"汐止區", e:"Xizhi"}, {z:"樹林區", e:"Shulin"}, {z:"淡水區", e:"Tamsui"}, {z:"林口區", e:"Linkou"},
+            {z:"五股區", e:"Wugu"}, {z:"泰山區", e:"Taishan"}, {z:"三峽區", e:"Sanxia"}, {z:"鶯歌區", e:"Yingge"},
+            {z:"深坑區", e:"Shenkeng"}, {z:"八里區", e:"Bali"}, {z:"瑞芳區", e:"Ruifang"}
+        ]
+    };
+
+    const foods = [
+        {z:"牛肉麵", e:"Beef Noodles"}, {z:"滷肉飯", e:"Braised Pork Rice"}, {z:"鹽酥雞", e:"Fried Chicken"},
+        {z:"拉麵", e:"Ramen"}, {z:"火鍋", e:"Hot Pot"}, {z:"壽司", e:"Sushi"}, {z:"燒肉", e:"BBQ"},
+        {z:"披薩", e:"Pizza"}, {z:"漢堡", e:"Burger"}, {z:"泰式料理", e:"Thai Food"}, {z:"河粉", e:"Pho"},
+        {z:"臭豆腐", e:"Stinky Tofu"}, {z:"水餃", e:"Dumplings"}, {z:"咖哩飯", e:"Curry Rice"},
+        {z:"義大利麵", e:"Pasta"}, {z:"蛋餅", e:"Dan Bing"}, {z:"小籠包", e:"Xiao Long Bao"},
+        {z:"鐵板燒", e:"Teppanyaki"}, {z:"蚵仔煎", e:"Oyster Omelet"}, {z:"雞肉飯", e:"Turkey Rice"},
+        {z:"涼麵", e:"Cold Noodles"}, {z:"麻油雞", e:"Sesame Oil Chicken"}, {z:"羊肉爐", e:"Mutton Pot"},
+        {z:"燒臘", e:"Roast Meat"}, {z:"便當", e:"Bento"}, {z:"粥品", e:"Congee"}, {z:"涼粉", e:"Starch Jelly"},
+        {z:"地瓜球", e:"Sweet Potato Balls"}, {z:"車輪餅", e:"Wheel Cake"}, {z:"大腸麵線", e:"Vermicelli"},
+        {z:"排骨飯", e:"Pork Rib Rice"}, {z:"丼飯", e:"Donburi"}, {z:"居酒屋", e:"Izakaya"},
+        {z:"早午餐", e:"Brunch"}, {z:"越南法國麵包", e:"Banh Mi"}, {z:"土耳其沙威瑪", e:"Shawarma"},
+        {z:"石鍋拌飯", e:"Bibimbap"}, {z:"韓式炸雞", e:"Korean Fried Chicken"}, {z:"章魚燒", e:"Takoyaki"},
+        {z:"天婦羅", e:"Tempura"}, {z:"牛排", e:"Steak"}, {z:"港式飲茶", e:"Dim Sum"}, {z:"肉圓", e:"Ba Wan"},
+        {z:"麻辣燙", e:"Spicy Soup"}, {z:"串燒", e:"Skewers"}, {z:"胡椒餅", e:"Pepper Cake"},
+        {z:"潤餅", e:"Popiah"}, {z:"刈包", e:"Gua Bao"}, {z:"滷味", e:"Braised Food"},
+        {z:"酸菜魚", e:"Sauerkraut Fish"}, {z:"生魚片", e:"Sashimi"}, {z:"甜不辣", e:"Tempura Bowl"},
+        {z:"切仔麵", e:"Qiezi Noodles"}, {z:"擔仔麵", e:"Danzai Noodles"}, {z:"海南雞飯", e:"Hainanese Chicken Rice"},
+        {z:"新加坡肉骨茶", e:"Bak Kut Teh"}, {z:"印度咖哩", e:"Indian Curry"}, {z:"墨西哥餅", e:"Tacos"},
+        {z:"素食料理", e:"Vegetarian"}, {z:"螺絲粉", e:"Luosifen"}, {z:"酸辣粉", e:"Hot and Sour Noodles"},
+        {z:"豬血糕", e:"Pig Blood Cake"}, {z:"關東煮", e:"Oden"}, {z:"油飯", e:"Oil Rice"},
+        {z:"熱炒", e:"Stir-fry"}, {z:"港式燒鵝", e:"Roast Goose"}, {z:"烤鴨", e:"Roast Duck"},
+        {z:"酸辣湯", e:"Hot and Sour Soup"}, {z:"雲吞麵", e:"Wonton Noodles"}, {z:"廣東粥", e:"Cantonese Congee"},
+        {z:"砂鍋魚頭", e:"Fish Head Casserole"}, {z:"壽喜燒", e:"Sukiyaki"}, {z:"鰻魚飯", e:"Unagi Don"},
+        {z:"蛋包飯", e:"Omurice"}, {z:"塔可飯", e:"Taco Rice"}, {z:"日式豬排", e:"Tonkatsu"},
+        {z:"法式料理", e:"French Cuisine"}, {z:"希臘料理", e:"Greek Food"}, {z:"美式鬆餅", e:"Pancakes"},
+        {z:"古巴三明治", e:"Cuban Sandwich"}, {z:"炸魚薯條", e:"Fish and Chips"}, {z:"舒芙蕾", e:"Souffle"},
+        {z:"部隊鍋", e:"Army Stew"}, {z:"銅盤烤肉", e:"Korean BBQ"}, {z:"炸醬麵", e:"Zha Jiang Mian"},
+        {z:"烏龍麵", e:"Udon"}, {z:"蕎麥麵", e:"Soba"}, {z:"炸天婦羅", e:"Tempura"},
+        {z:"擔擔麵", e:"Dandan Noodles"}, {z:"紅油抄手", e:"Wontons in Chili Oil"}, {z:"砂鍋粥", e:"Casserole Congee"},
+        {z:"麻醬麵", e:"Sesame Noodles"}, {z:"豬腳飯", e:"Pork Knuckle Rice"}, {z:"控肉飯", e:"Kong Rou Rice"},
+        {z:"溫州大餛飩", e:"Wonton Soup"}, {z:"酸辣粉", e:"Glass Noodles"}, {z:"魚丸湯", e:"Fishball Soup"},
+        {z:"肉羹麵", e:"Meat Thick Soup"}, {z:"鴨肉麵", e:"Duck Noodles"}, {z:"炒烏龍", e:"Stir-fry Udon"}
+    ];
+
+    let L = 'zh';
+
+    function switchL(lang) {
+        L = lang;
+        document.getElementById('t').innerText = (L==='zh') ? "給咪咪的餓靈古堡" : "Mimi's Feast Palace";
+        document.getElementById('b').innerText = (L==='zh') ? "末世來臨 十二星座選擇你的晚餐" : "The apocalypse is coming; the twelve zodiac signs choose their dinner.";
+        document.getElementById('map-btn').innerText = (L==='zh') ? "在地圖搜尋附近物資" : "Search for nearby supplies on the map";
+        document.getElementById('z-btn').className = (L==='zh') ? 'active' : '';
+        document.getElementById('e-btn').className = (L==='en') ? 'active' : '';
+        initSelect();
+    }
+
+    function initSelect() {
+        const s = document.getElementById('loc-select');
+        s.innerHTML = `<option value="" disabled selected>${L==='zh'?'--選擇地區--':'--Select Area--'}</option>`;
+        
+        const g1 = document.createElement('optgroup');
+        g1.label = L==='zh' ? "台北市" : "Taipei";
+        area.tp.forEach(item => {
+            let opt = document.createElement('option');
+            opt.value = item.z;
+            opt.innerText = L==='zh' ? item.z : item.e;
+            g1.appendChild(opt);
+        });
+        s.appendChild(g1);
+
+        const g2 = document.createElement('optgroup');
+        g2.label = L==='zh' ? "新北市" : "New Taipei";
+        area.ntp.forEach(item => {
+            let opt = document.createElement('option');
+            opt.value = item.z;
+            opt.innerText = L==='zh' ? item.z : item.e;
+            g2.appendChild(opt);
+        });
+        s.appendChild(g2);
+    }
+
+    function go() {
+        const sel = document.getElementById('loc-select');
+        if(!sel.value) return alert(L==='zh'?"請先選擇地區喔！":"Please select an area first!");
+
+        const btn = document.getElementById('b');
+        const f = document.getElementById('f-text');
+        const mb = document.getElementById('map-btn');
+        const box = document.getElementById('castle-box');
+
+        btn.disabled = true;
+        mb.style.display = 'none';
+        box.classList.add('bounce');
+
+        let times = 0;
+        let roll = setInterval(() => {
+            let rFood = foods[Math.floor(Math.random() * foods.length)];
+            f.innerText = L==='zh' ? rFood.z : rFood.e;
+            times++;
+            if(times > 15) {
+                clearInterval(roll);
+                let final = foods[Math.floor(Math.random() * foods.length)];
+                f.innerText = L==='zh' ? final.z : final.e;
+                
+                let q = encodeURIComponent(sel.value + " " + final.z);
+                mb.href = "https://www.google.com/maps/search/" + q;
+                mb.style.display = 'block';
+                
+                btn.disabled = false;
+                box.classList.remove('bounce');
+            }
+        }, 80);
+    }
+
+    window.onload = () => switchL('zh');
+</script>
+
+</body>
+</html>
