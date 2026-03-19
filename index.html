@@ -5,39 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>給咪咪的餓靈古堡</title>
     <style>
-        /* 莫蘭迪色系變數設定 */
         :root { 
-            /* 莫蘭迪粉 (預設) */
             --primary: #B59090; --bg: #E3D7D7; --accent: #6E5A5A; 
             --castle-bg: #F0E8E8; --input-bg: #C7B1B1;
+            --loading-color: #B59090; /* 預設隨主題色 */
         }
         [data-theme="orange"] {
-            /* 莫蘭迪橘 (暖陶) */
             --primary: #C69B7B; --bg: #EAE0D5; --accent: #785A43; 
             --castle-bg: #F5EFE9; --input-bg: #D9C2B1;
+            --loading-color: #C69B7B;
         }
         [data-theme="blue"] {
-            /* 莫蘭迪藍 (煙霾) */
             --primary: #8E9AAF; --bg: #D8DEE9; --accent: #4A5568; 
             --castle-bg: #E5E9F0; --input-bg: #B0B9C8;
+            --loading-color: #8E9AAF;
         }
         [data-theme="green"] {
-            /* 莫蘭迪綠 (鼠尾草) */
             --primary: #949B86; --bg: #E2E4DC; --accent: #4B5141; 
             --castle-bg: #ECEDE8; --input-bg: #B7BCA9;
+            --loading-color: #949B86;
         }
         [data-theme="black"] {
-            /* 莫蘭迪黑 (冷石灰) */
             --primary: #6B705C; --bg: #D4D5D0; --accent: #333533; 
             --castle-bg: #E5E5E2; --input-bg: #8D917A;
+            --loading-color: #6B705C;
         }
+
         body { 
             background: var(--bg); color: var(--accent); text-align: center;
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
             margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
             transition: all 0.4s ease; min-height: 100vh;
         }
-        /* 主題切換按鈕區域 */
         .theme-panel { margin-bottom: 25px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
         .theme-panel button { 
             border: 1.5px solid var(--primary); background: #fff; color: var(--primary); 
@@ -45,6 +44,7 @@
             transition: 0.3s;
         }
         .theme-panel button:hover { background: var(--primary); color: white; }
+
         .castle { 
             max-width: 420px; width: 100%; border: 2px solid var(--primary); 
             padding: 30px; background: var(--castle-bg); border-radius: 20px; 
@@ -54,45 +54,55 @@
         .lang-box { text-align: right; margin-bottom: 12px; }
         .lang-box button { background: none; border: 1px solid var(--primary); color: var(--primary); cursor: pointer; padding: 3px 10px; font-size: 12px; border-radius: 5px; }
         .lang-box button.active { background: var(--primary); color: #fff; }
-        /* 下拉選單：文字純白且有質感 */
+
+        .select-group { display: flex; gap: 10px; margin: 20px 0; }
         select { 
-            width: 100%; padding: 14px; margin: 20px 0; 
-            background: var(--input-bg); 
-            color: #FFFFFF !important; 
-            border: none;
-            font-size: 16px; 
-            border-radius: 12px; 
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            flex: 1; padding: 12px; 
+            background: var(--input-bg); color: #FFFFFF !important; 
+            border: none; font-size: 15px; border-radius: 12px; font-weight: bold;
+            cursor: pointer; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         select option { color: #555; background: #fff; }
+
         .main-btn { 
             width: 100%; padding: 16px; background: var(--primary); color: white; 
             border: none; font-size: 1.1rem; font-weight: bold; cursor: pointer; 
-            border-radius: 12px; transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 12px; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .main-btn:active { transform: scale(0.97); }
         .main-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* 結果顯示區塊：分為上下兩部分 */
         #result-display { 
-            height: 110px; display: flex; align-items: center; justify-content: center; 
+            height: 140px; display: flex; flex-direction: column; 
             margin-top: 25px; border: 2px dashed var(--primary); border-radius: 15px; 
-            background: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.3); position: relative; overflow: hidden;
         }
-        .food-name { font-size: 1.9rem; color: var(--accent); font-weight: bold; }
-        
-        #map-btn { 
-            display: none; margin-top: 20px; padding: 15px; 
-            background: var(--accent); color: white; text-decoration: none; 
-            border-radius: 12px; font-weight: bold; transition: 0.3s;
+
+        /* 上半部：進度與數字 */
+        .loading-zone { height: 50px; position: relative; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .loading-bar { position: absolute; bottom: 0; left: 0; height: 4px; background-color: var(--loading-color); width: 0%; transition: width 0.1s linear; }
+        .loading-text { font-size: 1.1rem; font-weight: bold; color: var(--primary); opacity: 0; }
+        .loading-text.show { opacity: 1; }
+
+        /* 下半部：食物名稱 */
+        .food-zone { flex: 1; display: flex; align-items: center; justify-content: center; }
+        .food-name { font-size: 1.8rem; color: var(--accent); font-weight: bold; }
+
+        /* 最終結果彈出動畫 */
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            70% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
         }
+        .pop { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        #map-btn { display: none; margin-top: 20px; padding: 15px; background: var(--accent); color: white; text-decoration: none; border-radius: 12px; font-weight: bold; transition: 0.3s; }
         .shake { animation: shake 0.2s infinite; }
         @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, 1px); } }
     </style>
 </head>
 <body>
+
 <div class="theme-panel">
     <button onclick="setTheme('default')">粉</button>
     <button onclick="setTheme('orange')">橘</button>
@@ -100,42 +110,68 @@
     <button onclick="setTheme('green')">綠</button>
     <button onclick="setTheme('black')">灰</button>
 </div>
+
 <div class="castle" id="castle-box">
     <div class="lang-box">
         <button id="z-btn" class="active" onclick="switchL('zh')">中</button>
         <button id="e-btn" onclick="switchL('en')">EN</button>
     </div>
     <h1 id="t">給咪咪的餓靈古堡</h1>
-    <select id="loc-select"></select>
+    
+    <div class="select-group">
+        <select id="city-select" onchange="updateDistricts()">
+            <option value="" disabled selected>縣市</option>
+        </select>
+        <select id="dist-select">
+            <option value="" disabled selected>行政區</option>
+        </select>
+    </div>
+
     <button class="main-btn" id="b" onclick="go()">末世來臨 十二星座選擇你的晚餐</button>
-    <div id="result-display"><div id="f-text" class="food-name">? ? ?</div></div>
+
+    <div id="result-display">
+        <div class="loading-zone">
+            <div class="loading-text" id="loading-text">0%</div>
+            <div class="loading-bar" id="loading-bar"></div>
+        </div>
+        <div class="food-zone">
+            <div id="f-text" class="food-name">? ? ?</div>
+        </div>
+    </div>
+
     <a id="map-btn" href="#" target="_blank">搜尋附近物資</a>
 </div>
+
 <script>
     function setTheme(t) {
         document.documentElement.setAttribute('data-theme', t === 'default' ? '' : t);
     }
-    
-    // 雙北全區資料庫
-    const area = {
-        tp: [
-            {z:"中正區", e:"Zhongzheng"}, {z:"大同區", e:"Datong"}, {z:"中山區", e:"Zhongshan"}, 
-            {z:"松山區", e:"Songshan"}, {z:"大安區", e:"Daan"}, {z:"萬華區", e:"Wanhua"}, 
-            {z:"信義區", e:"Xinyi"}, {z:"士林區", e:"Shilin"}, {z:"北投區", e:"Beitou"}, 
-            {z:"內湖區", e:"Neihu"}, {z:"南港區", e:"Nangang"}, {z:"文山區", e:"Wenshan"}
-        ],
-        ntp: [
-            {z:"板橋區", e:"Banqiao"}, {z:"三重區", e:"Sanchong"}, {z:"中和區", e:"Zhonghe"}, 
-            {z:"永和區", e:"Yonghe"}, {z:"新莊區", e:"Xinzhuang"}, {z:"新店區", e:"Xindian"}, 
-            {z:"土城區", e:"Tucheng"}, {z:"蘆洲區", e:"Luzhou"}, {z:"汐止區", e:"Xizhi"}, 
-            {z:"樹林區", e:"Shulin"}, {z:"淡水區", e:"Tamsui"}, {z:"林口區", e:"Linkou"}, 
-            {z:"五股區", e:"Wugu"}, {z:"泰山區", e:"Taishan"}, {z:"三峽區", e:"Sanxia"}, 
-            {z:"鶯歌區", e:"Yingge"}, {z:"深坑區", e:"Shenkeng"}, {z:"石碇區", e:"Shiding"}, 
-            {z:"坪林區", e:"Pinglin"}, {z:"三芝區", e:"Sanzhi"}, {z:"石門區", e:"Shimen"}, 
-            {z:"八里區", e:"Bali"}, {z:"平溪區", e:"Pingxi"}, {z:"雙溪區", e:"Shuangxi"}, 
-            {z:"貢寮區", e:"Gongliao"}, {z:"金山區", e:"Jinshan"}, {z:"萬里區", e:"Wanli"}, 
-            {z:"烏來區", e:"Wulai"}, {z:"瑞芳區", e:"Ruifang"}
-        ]
+
+    const areaData = {
+        tp: {
+            name: {zh: "台北市", en: "Taipei"},
+            list: [
+                {z:"中正區", e:"Zhongzheng"}, {z:"大同區", e:"Datong"}, {z:"中山區", e:"Zhongshan"}, 
+                {z:"松山區", e:"Songshan"}, {z:"大安區", e:"Daan"}, {z:"萬華區", e:"Wanhua"}, 
+                {z:"信義區", e:"Xinyi"}, {z:"士林區", e:"Shilin"}, {z:"北投區", e:"Beitou"}, 
+                {z:"內湖區", e:"Neihu"}, {z:"南港區", e:"Nangang"}, {z:"文山區", e:"Wenshan"}
+            ]
+        },
+        ntp: {
+            name: {zh: "新北市", en: "New Taipei"},
+            list: [
+                {z:"板橋區", e:"Banqiao"}, {z:"三重區", e:"Sanchong"}, {z:"中和區", e:"Zhonghe"}, 
+                {z:"永和區", e:"Yonghe"}, {z:"新莊區", e:"Xinzhuang"}, {z:"新店區", e:"Xindian"}, 
+                {z:"土城區", e:"Tucheng"}, {z:"蘆洲區", e:"Luzhou"}, {z:"汐止區", e:"Xizhi"}, 
+                {z:"樹林區", e:"Shulin"}, {z:"淡水區", e:"Tamsui"}, {z:"林口區", e:"Linkou"}, 
+                {z:"五股區", e:"Wugu"}, {z:"泰山區", e:"Taishan"}, {z:"三峽區", e:"Sanxia"}, 
+                {z:"鶯歌區", e:"Yingge"}, {z:"深坑區", e:"Shenkeng"}, {z:"石碇區", e:"Shiding"}, 
+                {z:"坪林區", e:"Pinglin"}, {z:"三芝區", e:"Sanzhi"}, {z:"石門區", e:"Shimen"}, 
+                {z:"八里區", e:"Bali"}, {z:"平溪區", e:"Pingxi"}, {z:"雙溪區", e:"Shuangxi"}, 
+                {z:"貢寮區", e:"Gongliao"}, {z:"金山區", e:"Jinshan"}, {z:"萬里區", e:"Wanli"}, 
+                {z:"烏來區", e:"Wulai"}, {z:"瑞芳區", e:"Ruifang"}
+            ]
+        }
     };
 
     const foods = [
@@ -155,38 +191,74 @@
         document.getElementById('map-btn').innerText = L==='zh' ? "搜尋附近物資" : "Search for nearby supplies";
         document.getElementById('z-btn').className = L==='zh' ? 'active' : '';
         document.getElementById('e-btn').className = L==='en' ? 'active' : '';
-        initSelect();
+        initCitySelect();
     }
 
-    function initSelect() {
-        const s = document.getElementById('loc-select');
-        s.innerHTML = `<option value="" disabled selected>${L==='zh'?'--選擇地區--':'--Select Area--'}</option>`;
-        for(let city in area) {
-            let g = document.createElement('optgroup');
-            g.label = city==='tp' ? (L==='zh'?"台北市":"Taipei") : (L==='zh'?"新北市":"New Taipei");
-            area[city].forEach(i => {
+    function initCitySelect() {
+        const cityS = document.getElementById('city-select');
+        const distS = document.getElementById('dist-select');
+        cityS.innerHTML = `<option value="" disabled selected>${L==='zh'?'縣市':'City'}</option>`;
+        for(let key in areaData) {
+            let o = document.createElement('option');
+            o.value = key;
+            o.innerText = areaData[key].name[L];
+            cityS.appendChild(o);
+        }
+        distS.innerHTML = `<option value="" disabled selected>${L==='zh'?'行政區':'District'}</option>`;
+    }
+
+    function updateDistricts() {
+        const cityKey = document.getElementById('city-select').value;
+        const distS = document.getElementById('dist-select');
+        distS.innerHTML = `<option value="" disabled selected>${L==='zh'?'行政區':'District'}</option>`;
+        
+        if(cityKey && areaData[cityKey]) {
+            areaData[cityKey].list.forEach(item => {
                 let o = document.createElement('option');
-                o.value = i.z; o.innerText = L==='zh' ? i.z : i.e;
-                g.appendChild(o);
+                o.value = item.z;
+                o.innerText = L==='zh' ? item.z : item.e;
+                distS.appendChild(o);
             });
-            s.appendChild(g);
         }
     }
 
     function go() {
-        const sel = document.getElementById('loc-select');
-        if(!sel.value) return alert(L==='zh'?"請先選擇地區！":"Please select an area!");
-        const btn = document.getElementById('b'), f = document.getElementById('f-text'), mb = document.getElementById('map-btn'), box = document.getElementById('castle-box');
+        const cityVal = document.getElementById('city-select').value;
+        const distVal = document.getElementById('dist-select').value;
+        if(!cityVal || !distVal) return alert(L==='zh'?"請先完成地區選擇！":"Please select both City and District!");
+
+        const btn = document.getElementById('b'), fText = document.getElementById('f-text'), mb = document.getElementById('map-btn'), box = document.getElementById('castle-box'), bar = document.getElementById('loading-bar'), lt = document.getElementById('loading-text');
+
+        // Reset
         btn.disabled = true; mb.style.display = 'none'; box.classList.add('shake');
-        let count = 0;
-        let timer = setInterval(() => {
-            f.innerText = foods[Math.floor(Math.random() * foods.length)][L==='zh'?'z':'e'];
-            if(count++ > 15) {
-                clearInterval(timer);
+        fText.classList.remove('pop'); fText.innerText = '...';
+        bar.style.width = '0%'; lt.innerText = '0%'; lt.classList.add('show');
+
+        let progress = 0;
+        let loadInterval = setInterval(() => {
+            progress += Math.random() * 8;
+            if(progress >= 100) {
+                progress = 100;
+                clearInterval(loadInterval);
+            }
+            bar.style.width = progress + '%';
+            lt.innerText = Math.floor(progress) + '%';
+        }, 120);
+
+        let rollCount = 0;
+        let rollInterval = setInterval(() => {
+            fText.innerText = foods[Math.floor(Math.random() * foods.length)][L==='zh'?'z':'e'];
+            if(rollCount++ > 20 && progress >= 100) {
+                clearInterval(rollInterval);
                 let final = foods[Math.floor(Math.random() * foods.length)];
-                f.innerText = L === 'zh' ? final.z : final.e;
-                mb.href = "https://www.google.com/maps/search/" + encodeURIComponent(sel.value + " " + final.z);
-                mb.style.display = 'block'; btn.disabled = false; box.classList.remove('shake');
+                fText.innerText = L === 'zh' ? final.z : final.e;
+                fText.classList.add('pop');
+
+                let cityName = areaData[cityVal].name.zh;
+                mb.href = "https://www.google.com/maps/search/" + encodeURIComponent(cityName + distVal + " " + final.z);
+                mb.style.display = 'block';
+                btn.disabled = false; box.classList.remove('shake');
+                setTimeout(() => lt.classList.remove('show'), 1000);
             }
         }, 80);
     }
