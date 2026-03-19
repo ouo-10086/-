@@ -3,31 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>給咪咪的餓靈古堡</title>
+    <title>給咪咪的餓靈古堡 - 雙北全域版</title>
     <style>
-        /* 莫蘭迪色系變數設定 */
         :root { 
-            /* 莫蘭迪粉 (預設) */
             --primary: #B59090; --bg: #E3D7D7; --accent: #6E5A5A; 
             --castle-bg: #F0E8E8; --input-bg: #C7B1B1;
         }
         [data-theme="orange"] {
-            /* 莫蘭迪橘 (暖陶) */
             --primary: #C69B7B; --bg: #EAE0D5; --accent: #785A43; 
             --castle-bg: #F5EFE9; --input-bg: #D9C2B1;
         }
         [data-theme="blue"] {
-            /* 莫蘭迪藍 (煙霾) */
             --primary: #8E9AAF; --bg: #D8DEE9; --accent: #4A5568; 
             --castle-bg: #E5E9F0; --input-bg: #B0B9C8;
         }
         [data-theme="green"] {
-            /* 莫蘭迪綠 (鼠尾草) */
             --primary: #949B86; --bg: #E2E4DC; --accent: #4B5141; 
             --castle-bg: #ECEDE8; --input-bg: #B7BCA9;
         }
         [data-theme="black"] {
-            /* 莫蘭迪黑 (冷石灰) */
             --primary: #6B705C; --bg: #D4D5D0; --accent: #333533; 
             --castle-bg: #E5E5E2; --input-bg: #8D917A;
         }
@@ -39,37 +33,29 @@
             transition: all 0.4s ease; min-height: 100vh;
         }
 
-        /* 主題切換按鈕區域 */
         .theme-panel { margin-bottom: 25px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
         .theme-panel button { 
             border: 1.5px solid var(--primary); background: #fff; color: var(--primary); 
             padding: 7px 15px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold;
             transition: 0.3s;
         }
-        .theme-panel button:hover { background: var(--primary); color: white; }
 
         .castle { 
-            max-width: 400px; width: 100%; border: 2px solid var(--primary); 
+            max-width: 420px; width: 100%; border: 2px solid var(--primary); 
             padding: 30px; background: var(--castle-bg); border-radius: 20px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.05); box-sizing: border-box; 
         }
 
-        h1 { color: var(--primary); margin: 0 0 15px 0; letter-spacing: 1px; }
+        h1 { color: var(--primary); margin: 0 0 15px 0; }
         .lang-box { text-align: right; margin-bottom: 12px; }
         .lang-box button { background: none; border: 1px solid var(--primary); color: var(--primary); cursor: pointer; padding: 3px 10px; font-size: 12px; border-radius: 5px; }
         .lang-box button.active { background: var(--primary); color: #fff; }
 
-        /* 下拉選單：文字純白且有質感 */
         select { 
             width: 100%; padding: 14px; margin: 20px 0; 
-            background: var(--input-bg); 
-            color: #FFFFFF !important; 
-            border: none;
-            font-size: 16px; 
-            border-radius: 12px; 
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            background: var(--input-bg); color: #FFFFFF !important; 
+            border: none; font-size: 16px; border-radius: 12px; font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         select option { color: #555; background: #fff; }
 
@@ -77,10 +63,7 @@
             width: 100%; padding: 16px; background: var(--primary); color: white; 
             border: none; font-size: 1.1rem; font-weight: bold; cursor: pointer; 
             border-radius: 12px; transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .main-btn:active { transform: scale(0.97); }
-        .main-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         #result-display { 
             height: 110px; display: flex; align-items: center; justify-content: center; 
@@ -92,7 +75,7 @@
         #map-btn { 
             display: none; margin-top: 20px; padding: 15px; 
             background: var(--accent); color: white; text-decoration: none; 
-            border-radius: 12px; font-weight: bold; transition: 0.3s;
+            border-radius: 12px; font-weight: bold;
         }
 
         .shake { animation: shake 0.2s infinite; }
@@ -106,7 +89,7 @@
     <button onclick="setTheme('orange')">橘</button>
     <button onclick="setTheme('blue')">藍</button>
     <button onclick="setTheme('green')">綠</button>
-    <button onclick="setTheme('black')">灰</button>
+    <button onclick="setTheme('black')">黑</button>
 </div>
 
 <div class="castle" id="castle-box">
@@ -116,7 +99,7 @@
     </div>
     <h1 id="t">給咪咪的餓靈古堡</h1>
     <select id="loc-select"></select>
-    <button class="main-btn" id="b" onclick="go()">末世來臨 十二星座選擇你的晚餐</button>
+    <button class="main-btn" id="b" onclick="go()">開始抽選晚餐</button>
     <div id="result-display"><div id="f-text" class="food-name">? ? ?</div></div>
     <a id="map-btn" href="#" target="_blank">搜尋附近物資</a>
 </div>
@@ -126,9 +109,22 @@
         document.documentElement.setAttribute('data-theme', t === 'default' ? '' : t);
     }
 
+    // 補全雙北全地區 (台北 12 區 + 新北 29 區)
     const area = {
-        tp: [{z:"信義區", e:"Xinyi"}, {z:"大安區", e:"Daan"}, {z:"中山區", e:"Zhongshan"}, {z:"萬華區", e:"Wanhua"}, {z:"內湖區", e:"Neihu"}, {z:"士林區", e:"Shilin"}],
-        ntp: [{z:"板橋區", e:"Banqiao"}, {z:"三重區", e:"Sanchong"}, {z:"中和區", e:"Zhonghe"}, {z:"永和區", e:"Yonghe"}, {z:"新莊區", e:"Xinzhuang"}]
+        tp: [
+            {z:"中正區", e:"Zhongzheng"}, {z:"大同區", e:"Datong"}, {z:"中山區", e:"Zhongshan"}, {z:"松山區", e:"Songshan"},
+            {z:"大安區", e:"Daan"}, {z:"萬華區", e:"Wanhua"}, {z:"信義區", e:"Xinyi"}, {z:"士林區", e:"Shilin"},
+            {z:"北投區", e:"Beitou"}, {z:"內湖區", e:"Neihu"}, {z:"南港區", e:"Nangang"}, {z:"文山區", e:"Wenshan"}
+        ],
+        ntp: [
+            {z:"板橋區", e:"Banqiao"}, {z:"三重區", e:"Sanchong"}, {z:"中和區", e:"Zhonghe"}, {z:"永和區", e:"Yonghe"},
+            {z:"新莊區", e:"Xinzhuang"}, {z:"新店區", e:"Xindian"}, {z:"土城區", e:"Tucheng"}, {z:"蘆洲區", e:"Luzhou"},
+            {z:"汐止區", e:"Xizhi"}, {z:"樹林區", e:"Shulin"}, {z:"淡水區", e:"Tamsui"}, {z:"林口區", e:"Linkou"},
+            {z:"五股區", e:"Wugu"}, {z:"泰山區", e:"Taishan"}, {z:"三峽區", e:"Sanxia"}, {z:"鶯歌區", e:"Yingge"},
+            {z:"深坑區", e:"Shenkeng"}, {z:"石碇區", e:"Shiding"}, {z:"坪林區", e:"Pinglin"}, {z:"三芝區", e:"Sanzhi"},
+            {z:"石門區", e:"Shimen"}, {z:"八里區", e:"Bali"}, {z:"平溪區", e:"Pingxi"}, {z:"雙溪區", e:"Shuangxi"},
+            {z:"貢寮區", e:"Gongliao"}, {z:"金山區", e:"Jinshan"}, {z:"萬里區", e:"Wanli"}, {z:"烏來區", e:"Wulai"}, {z:"瑞芳區", e:"Ruifang"}
+        ]
     };
 
     const foods = [
@@ -136,7 +132,8 @@
         {z:"拉麵", e:"Ramen"}, {z:"火鍋", e:"Hot Pot"}, {z:"壽司", e:"Sushi"}, {z:"燒肉", e:"BBQ"},
         {z:"披薩", e:"Pizza"}, {z:"漢堡", e:"Burger"}, {z:"泰式料理", e:"Thai Food"},
         {z:"臭豆腐", e:"Stinky Tofu"}, {z:"水餃", e:"Dumplings"}, {z:"義大利麵", e:"Pasta"},
-        {z:"蛋餅", e:"Dan Bing"}, {z:"雞肉飯", e:"Chicken Rice"}, {z:"小籠包", e:"Xiao Long Bao"}
+        {z:"蛋餅", e:"Dan Bing"}, {z:"雞肉飯", e:"Chicken Rice"}, {z:"小籠包", e:"Xiao Long Bao"},
+        {z:"鐵板燒", e:"Teppanyaki"}, {z:"蚵仔煎", e:"Oyster Omelet"}, {z:"涼麵", e:"Cold Noodles"}
     ];
 
     let L = 'zh';
@@ -144,8 +141,8 @@
     function switchL(lang) {
         L = lang;
         document.getElementById('t').innerText = L==='zh' ? "給咪咪的餓靈古堡" : "Mimi's Feast";
-        document.getElementById('b').innerText = L==='zh' ? "末世來臨 十二星座選擇你的晚餐" : "The apocalypse is coming; the twelve zodiac signs choose their dinner.";
-        document.getElementById('map-btn').innerText = L==='zh' ? "搜尋附近物資" : "Search for nearby supplies";
+        document.getElementById('b').innerText = L==='zh' ? "開始抽選晚餐" : "Start Selection";
+        document.getElementById('map-btn').innerText = L==='zh' ? "搜尋附近物資" : "Search Map";
         document.getElementById('z-btn').className = L==='zh' ? 'active' : '';
         document.getElementById('e-btn').className = L==='en' ? 'active' : '';
         initSelect();
