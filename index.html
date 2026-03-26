@@ -8,7 +8,7 @@
         :root { 
             --primary: #B59090; --bg: #E3D7D7; --accent: #6E5A5A; 
             --castle-bg: #F0E8E8; --input-bg: #C7B1B1;
-            --loading-color: #B59090; /* 預設隨主題色 */
+            --loading-color: #B59090;
         }
         [data-theme="orange"] {
             --primary: #C69B7B; --bg: #EAE0D5; --accent: #785A43; 
@@ -71,24 +71,20 @@
         }
         .main-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* 結果顯示區塊：分為上下兩部分 */
         #result-display { 
             height: 140px; display: flex; flex-direction: column; 
             margin-top: 25px; border: 2px dashed var(--primary); border-radius: 15px; 
             background: rgba(255,255,255,0.3); position: relative; overflow: hidden;
         }
 
-        /* 上半部：進度與數字 */
         .loading-zone { height: 50px; position: relative; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .loading-bar { position: absolute; bottom: 0; left: 0; height: 4px; background-color: var(--loading-color); width: 0%; transition: width 0.1s linear; }
         .loading-text { font-size: 1.1rem; font-weight: bold; color: var(--primary); opacity: 0; }
         .loading-text.show { opacity: 1; }
 
-        /* 下半部：食物名稱 */
         .food-zone { flex: 1; display: flex; align-items: center; justify-content: center; }
         .food-name { font-size: 1.8rem; color: var(--accent); font-weight: bold; }
 
-        /* 最終結果彈出動畫 */
         @keyframes popIn {
             0% { transform: scale(0.6); opacity: 0; }
             70% { transform: scale(1.15); opacity: 1; }
@@ -236,19 +232,20 @@
 
         let progress = 0;
         let loadInterval = setInterval(() => {
-            progress += Math.random() * 8;
+            progress += Math.random() * 10; // 加快一點讀條速度
             if(progress >= 100) {
                 progress = 100;
                 clearInterval(loadInterval);
             }
             bar.style.width = progress + '%';
             lt.innerText = Math.floor(progress) + '%';
-        }, 120);
+        }, 100);
 
         let rollCount = 0;
         let rollInterval = setInterval(() => {
             fText.innerText = foods[Math.floor(Math.random() * foods.length)][L==='zh'?'z':'e'];
-            if(rollCount++ > 20 && progress >= 100) {
+            // 確保進度條達到 100% 且滾動次數足夠才停止
+            if(rollCount++ > 25 && progress >= 100) {
                 clearInterval(rollInterval);
                 let final = foods[Math.floor(Math.random() * foods.length)];
                 fText.innerText = L === 'zh' ? final.z : final.e;
@@ -258,7 +255,8 @@
                 mb.href = "https://www.google.com/maps/search/" + encodeURIComponent(cityName + distVal + " " + final.z);
                 mb.style.display = 'block';
                 btn.disabled = false; box.classList.remove('shake');
-                setTimeout(() => lt.classList.remove('show'), 1000);
+                
+                // 這裡原本有隱藏 lt 的代碼，我已經刪除了，所以 100% 會一直留著
             }
         }, 80);
     }
